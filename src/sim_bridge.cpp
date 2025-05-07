@@ -3,8 +3,10 @@
 #include <string>
 #include <rclcpp/rclcpp.hpp>
 #include <eufs_msgs/msg/cone_array_with_covariance.hpp>
+#include <eufs_msgs/msg/wheel_speeds_stamped.hpp>
 #include <ackermann_msgs/msg/ackermann_drive_stamped.hpp>
 #include <lart_msgs/msg/dynamics_cmd.hpp>
+#include <lart_msgs/msg/dynamics.hpp>
 #include <lart_msgs/msg/cone_array.hpp>
 
 #define BLUE_CONE 0
@@ -31,6 +33,12 @@ public:
       std::bind(&SimBridge::dynamics_callback, this, std::placeholders::_1));
 
     ackermann_pub_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>("/cmd", 10);
+
+    sensor_speed_sub = this->create_subscription<eufs_msgs::msg::WheelSpeedsStamped>(
+      "/ground_truth/wheel_speeds", 10,
+      std::bind(&SimBridge::sensor_speed_callback, this, std::placeholders::_1));
+
+    dynamics_pub_ = this->create_publisher<lart_msgs::msg::Dynamics>("/acu_origin/dynamics", 10);
   }
 
 private:
@@ -74,6 +82,27 @@ private:
                 ack_msg.drive.steering_angle, msg->rpm, ack_msg.drive.speed);
   }
 
+  void sensor_speed_callback(const eufs_msgs::msg::WheelSpeedsStamped::SharedPtr msg)
+{
+  lart_msgs::msg::Dynamics dynamics_msg;
+
+  //dynamics_msg.steering_angle = ;
+
+  dynamics_msg.wheel_speed_lf = msg->speeds.lf_speed;
+  dynamics_msg.wheel_speed_rf = msg->speeds.rf_speed;
+  dynamics_msg.wheel_speed_lr = msg->speeds.lb_speed;
+  dynamics_msg.wheel_speed_rr = msg->speeds.rb_speed;
+
+  dynamics_pub_->publish(dynamics_msg);
+
+  RCLCPP_INFO(this->get_logger(), "Published Dynamics: steer=%.2f, lf=%.2f, rf=%.2f, lr=%.2f, rr=%.2f",
+              dynamics_msg.steering_angle,
+              dynamics_msg.wheel_speed_lf,
+              dynamics_msg.wheel_speed_rf,
+              dynamics_msg.wheel_speed_lr,
+              dynamics_msg.wheel_speed_rr);
+}
+
   float rpm_to_mps(uint16_t rpm)
   {
     return static_cast<float>(rpm) / 37.8188f;
@@ -83,6 +112,8 @@ private:
   rclcpp::Publisher<lart_msgs::msg::ConeArray>::SharedPtr cone_array_pub;
   rclcpp::Subscription<lart_msgs::msg::DynamicsCMD>::SharedPtr dynamics_sub_;
   rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr ackermann_pub_;
+  rclcpp::Subscription<eufs_msgs::msg::WheelSpeedsStamped>::SharedPtr sensor_speed_sub;
+  rclcpp::Publisher<lart_msgs::msg::Dynamics>::SharedPtr dynamics_pub_;
 };
 
 int main(int argc, char *argv[])
