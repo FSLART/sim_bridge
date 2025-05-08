@@ -12,6 +12,11 @@ find_package(eufs_msgs REQUIRED)
 find_package(ackermann_msgs REQUIRED)
 find_package(lart_msgs REQUIRED)
 
+include_directories(
+  include
+  ${CMAKE_SOURCE_DIR}/../lart_common
+)
+
 add_executable(sim_bridge src/sim_bridge.cpp)
 ament_target_dependencies(sim_bridge
   rclcpp

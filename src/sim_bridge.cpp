@@ -8,6 +8,7 @@
 #include <lart_msgs/msg/dynamics_cmd.hpp>
 #include <lart_msgs/msg/dynamics.hpp>
 #include <lart_msgs/msg/cone_array.hpp>
+#include "lart_common.h"
 
 #define BLUE_CONE 0
 #define YELLOW_CONE 1
@@ -74,7 +75,7 @@ private:
     ack_msg.header.stamp = this->now();
     ack_msg.header.frame_id = "base_link"; 
     ack_msg.drive.steering_angle = msg->steering_angle;
-    ack_msg.drive.speed = rpm_to_mps(msg->rpm);
+    ack_msg.drive.speed = RPM_TO_MS(msg->rpm);
 
     ackermann_pub_->publish(ack_msg);
 
@@ -86,21 +87,24 @@ private:
 {
   lart_msgs::msg::Dynamics dynamics_msg;
 
-  //dynamics_msg.steering_angle = ;
+  // dynamics_msg.wheel_speed_lf = msg->speeds.lf_speed;
+  // dynamics_msg.wheel_speed_rf = msg->speeds.rf_speed;
+  // dynamics_msg.wheel_speed_lr = msg->speeds.lb_speed;
+  // dynamics_msg.wheel_speed_rr = msg->speeds.rb_speed;
 
-  dynamics_msg.wheel_speed_lf = msg->speeds.lf_speed;
-  dynamics_msg.wheel_speed_rf = msg->speeds.rf_speed;
-  dynamics_msg.wheel_speed_lr = msg->speeds.lb_speed;
-  dynamics_msg.wheel_speed_rr = msg->speeds.rb_speed;
+  float speed = ((msg->speeds.lb_speed + msg->speeds.rb_speed)/2) / 37.8188;
+  dynamics_msg.rpm = MS_TO_RPM(speed);
 
   dynamics_pub_->publish(dynamics_msg);
 
-  RCLCPP_INFO(this->get_logger(), "Published Dynamics: steer=%.2f, lf=%.2f, rf=%.2f, lr=%.2f, rr=%.2f",
-              dynamics_msg.steering_angle,
-              dynamics_msg.wheel_speed_lf,
-              dynamics_msg.wheel_speed_rf,
-              dynamics_msg.wheel_speed_lr,
-              dynamics_msg.wheel_speed_rr);
+  RCLCPP_INFO(this->get_logger(), "Sensor rpm: %d",dynamics_msg.rpm);
+
+  // RCLCPP_INFO(this->get_logger(), "Published Dynamics: steer=%.2f, lf=%.2f, rf=%.2f, lr=%.2f, rr=%.2f",
+  //             dynamics_msg.steering_angle,
+  //             dynamics_msg.wheel_speed_lf,
+  //             dynamics_msg.wheel_speed_rf,
+  //             dynamics_msg.wheel_speed_lr,
+  //             dynamics_msg.wheel_speed_rr);
 }
 
   float rpm_to_mps(uint16_t rpm)
