@@ -64,7 +64,7 @@ private:
     convert_cones(msg->big_orange_cones, BIG_ORANGE_CONE);
     convert_cones(msg->unknown_color_cones, UNKNOWN_CONE);
 
-    RCLCPP_INFO(this->get_logger(), "Total cones converted: %lu", combined_cones.cones.size());
+    // RCLCPP_INFO(this->get_logger(), "Total cones converted: %lu", combined_cones.cones.size());
 
     cone_array_pub->publish(combined_cones);
   }
@@ -79,8 +79,8 @@ private:
 
     ackermann_pub_->publish(ack_msg);
 
-    RCLCPP_INFO(this->get_logger(), "DynamicsCMD → Ackermann: angle=%.2f, rpm=%d → speed=%.2f m/s",
-                ack_msg.drive.steering_angle, msg->rpm, ack_msg.drive.speed);
+    // RCLCPP_INFO(this->get_logger(), "DynamicsCMD → Ackermann: angle=%.2f, rpm=%d → speed=%.2f m/s",
+    //             ack_msg.drive.steering_angle, msg->rpm, ack_msg.drive.speed);
   }
 
   void sensor_speed_callback(const eufs_msgs::msg::WheelSpeedsStamped::SharedPtr msg)
@@ -97,7 +97,7 @@ private:
 
   dynamics_pub_->publish(dynamics_msg);
 
-  RCLCPP_INFO(this->get_logger(), "Sensor rpm: %d",dynamics_msg.rpm);
+  // RCLCPP_INFO(this->get_logger(), "Sensor rpm: %d",dynamics_msg.rpm);
 
   // RCLCPP_INFO(this->get_logger(), "Published Dynamics: steer=%.2f, lf=%.2f, rf=%.2f, lr=%.2f, rr=%.2f",
   //             dynamics_msg.steering_angle,
